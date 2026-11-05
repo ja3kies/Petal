@@ -10,6 +10,10 @@ Always check the four petals in the adaptive-icon safety area, the themed mask a
 
 Official Android adaptive-icon guidance requires a 108 × 108 dp layer with the essential logo inside the centered 66 dp diameter safe circle (minimum artwork approximately 48 dp).
 
-The approved petal outlines have not changed. Their shared transform is now `translate(25.92 25.92) scale(0.52)`, replacing the oversized `translate(18 18) scale(0.666667)` transform. Their visible bounds are approximately 50 × 49 dp, and their farthest pixel lies less than 31.1 dp from the layer center, inside the 33 dp safe radius. The same transform is used by the colored, monochrome and dynamic VectorDrawables and must be used to regenerate each legacy PNG.
+The approved petal outlines have not changed. Their shared transform is now `translate(28.62 28.62) scale(0.47)`, replacing the oversized `translate(18 18) scale(0.666667)` transform. Their visible bounds are approximately 45 × 44 dp, and their farthest pixel lies less than 28 dp from the layer center, inside the 33 dp safe radius. The same transform is used by the colored, monochrome and dynamic VectorDrawables and must be used to regenerate each legacy PNG.
 
 `python tools/verify_petal_icon_safe_zone.py` tests this requirement. Run `python tools/generate_petal_launcher_pngs.py` to regenerate the 15 PNG fallbacks before building. This change does not alter the colors, shape paths, versionCode or non-launcher UI.
+
+## Requested 45 dp icon
+
+The mark fits in a 45 × 45 dp box, with actual ink bounds about 45 × 44 dp. The size is below Android's preferred minimum of 48 dp; the user explicitly requested it. All four original vector outlines are unchanged. The verification script enforces the fit.

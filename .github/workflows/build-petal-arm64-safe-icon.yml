@@ -6,6 +6,9 @@ on:
     paths:
       - .github/workflows/build-petal-arm64-safe-icon.yml
       - app/build.gradle
+      - app/src/main/java/com/petal/browser/ui/components/PetalMergedBar.kt
+      - app/src/main/java/com/petal/browser/compose/tabs/PetalTabGridSwitcher.kt
+      - app/src/main/java/com/petal/browser/ui/components/BarPrefs.kt
       - app/src/main/res/drawable/ic_launcher_foreground.xml
       - app/src/main/res/drawable/ic_launcher_monochrome.xml
       - app/src/main/res/drawable/ic_launcher_foreground_dynamic.xml
@@ -114,15 +117,15 @@ jobs:
           test -x "$apksigner"
           "$apksigner" verify --verbose "$apk" >/dev/null
           mkdir -p deliver
-          cp "$apk" deliver/Petal-4.6.0-GitHub-arm64-v8a-safe-icon.apk
+          cp "$apk" deliver/Petal-4.6.1-GitHub-arm64-v8a-unified.apk
           sha256sum deliver/*.apk | tee -a "$GITHUB_STEP_SUMMARY"
           du -h deliver/*.apk
 
       - name: Upload ONLY arm64-v8a APK
         uses: actions/upload-artifact@v4
         with:
-          name: Petal-4.6.0-ARM64-safe-icon
-          path: deliver/Petal-4.6.0-GitHub-arm64-v8a-safe-icon.apk
+          name: Petal-4.6.1-ARM64-unified-45dp
+          path: deliver/Petal-4.6.1-GitHub-arm64-v8a-unified.apk
           compression-level: 0
           if-no-files-found: error
           retention-days: 2

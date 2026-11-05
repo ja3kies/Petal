@@ -15,7 +15,7 @@ VECTORS=[
   ROOT/'app/src/main/res/drawable/ic_launcher_monochrome.xml',
   ROOT/'app/src/main/res/drawable/ic_launcher_foreground_dynamic.xml',
 ]
-TRANSFORM="translate(25.92 25.92) scale(0.52)"
+TRANSFORM="translate(28.62 28.62) scale(0.47)"
 AND_NS="{http://schemas.android.com/apk/res/android}"
 EXPECTED={"translateX":"25.92","translateY":"25.92","scaleX":"0.52","scaleY":"0.52"}
 
@@ -34,14 +34,15 @@ def verify_svg(path):
     assert bbox is not None,path
     width=(bbox[2]-bbox[0])*108/pix
     height=(bbox[3]-bbox[1])*108/pix
-    assert 48 <= width <= 66 and 48 <= height <= 66,(path,width,height)
+    # 45 dp product request overrides Android's recommended 48 dp minimum.
+    assert 44.5 <= width <= 45.5 and 43.5 <= height <= 45.5,(path,width,height)
     alpha=channel.load()
     extent=0.0
     for y in range(pix):
         for x in range(pix):
             if alpha[x,y]>=128:
                 extent=max(extent,math.hypot((x+.5-pix/2)*108/pix,(y+.5-pix/2)*108/pix))
-    assert extent <= 32.5,(path,extent)
+    assert extent <= 29,(path,extent)
     print(f"PASS {path.name}: {width:.1f}×{height:.1f} dp, radius {extent:.1f}/33.0 dp")
     return petals
 
