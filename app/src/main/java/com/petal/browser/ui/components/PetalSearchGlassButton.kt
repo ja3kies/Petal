@@ -18,6 +18,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
@@ -76,7 +77,7 @@ internal fun PetalSearchGlassButton(
             .liquidGlass(CircleShape, scheme.surfaceContainerHigh, glassBar)
             .clip(CircleShape)
             .bouncyClickable(scaleDown = 0.86f, onClick = onClick)
-            .semantics { contentDescription = "Search" },
+            .semantics { contentDescription = stringResource(R.string.ui_search) },
         contentAlignment = Alignment.Center
     ) {
         Icon(

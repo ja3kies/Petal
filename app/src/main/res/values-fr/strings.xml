@@ -283,9 +283,9 @@
     <string name="ui_browse_photos_files">Parcourir les photos et les fichiers</string>
     <string name="ui_recent_photos">Photos récentes</string>
     <string name="ui_spoof_identity_user_agent">Usurpation d\'identité (agent utilisateur)</string>
-    <string name="ui_back">Dos</string>
-    <string name="ui_forward">Avant</string>
-    <string name="ui_home">Maison</string>
+    <string name="ui_back">Retour</string>
+    <string name="ui_forward">Avancer</string>
+    <string name="ui_home">Accueil</string>
     <string name="ui_tabs">Onglets</string>
     <string name="ui_menu">Menu</string>
     <string name="ui_ai_web_research">Recherche Web sur l\'IA</string>
@@ -335,6 +335,7 @@
     <string name="ui_move_left">Déplacer vers la gauche</string>
     <string name="ui_move_right">Déplacer à droite</string>
     <string name="ui_new_tab">Nouvel onglet</string>
+    <string name="ui_new_tab_short">Nouveau</string>
     <string name="ui_bookmarks">Signets</string>
     <string name="ui_history">Histoire</string>
     <string name="ui_downloads">Téléchargements</string>

@@ -379,6 +379,7 @@
     <string name="ui_move_left">Move Left</string>
     <string name="ui_move_right">Move Right</string>
     <string name="ui_new_tab">New Tab</string>
+    <string name="ui_new_tab_short">New</string>
     <string name="ui_bookmarks">Bookmarks</string>
     <string name="ui_history">History</string>
     <string name="ui_downloads">Downloads</string>

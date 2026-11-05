@@ -40,6 +40,7 @@ import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
@@ -153,7 +154,12 @@ internal fun PetalStrideNavBar(
         // take. Past that it shrinks its type rather than wrapping or pushing the bar
         // off a narrow screen.
         val labelMax = with(LocalDensity.current) {
-            (constraints.maxWidth - fixedWidth.roundToPx()).coerceAtLeast(24.dp.roundToPx())
+            (constraints.maxWidth - fixedWidth.roundToPx()).coerceAtLeast(0)
+        }
+        // When all icons fit but their expanded label does not, keep the controls
+        // accessible and avoid drawing text into the neighbouring search button.
+        val showSelectedLabel = with(LocalDensity.current) {
+            labelMax >= 32.dp.roundToPx()
         }
         // Where each item sits, so the glass slab can slide to the selected one.
         val itemBounds = remember { mutableStateMapOf<PetalNavTab, Rect>() }
@@ -184,11 +190,15 @@ internal fun PetalStrideNavBar(
                 val selected = selectedTab == tab
                 val weight = { weights[tab].coerceIn(0f, 1f) }
                 val label = when (tab) {
-                    PetalNavTab.HOME -> "Home"
-                    PetalNavTab.NEW_TAB -> "New"
-                    PetalNavTab.TABS -> "Tabs"
-                    PetalNavTab.MENU -> "Menu"
-                    PetalNavTab.SEARCH -> "Search"
+                    PetalNavTab.HOME -> stringResource(com.petal.browser.R.string.ui_home)
+                    PetalNavTab.NEW_TAB -> stringResource(com.petal.browser.R.string.ui_new_tab_short)
+                    PetalNavTab.TABS -> stringResource(com.petal.browser.R.string.ui_tabs)
+                    PetalNavTab.MENU -> stringResource(com.petal.browser.R.string.ui_menu)
+                    PetalNavTab.SEARCH -> stringResource(com.petal.browser.R.string.ui_search)
+                }
+                val accessibilityLabel = when (tab) {
+                    PetalNavTab.NEW_TAB -> stringResource(com.petal.browser.R.string.ui_new_tab)
+                    else -> label
                 }
                 val onClick = when (tab) {
                     PetalNavTab.HOME -> onHomeClick
@@ -204,7 +214,7 @@ internal fun PetalStrideNavBar(
                         .onGloballyPositioned { itemBounds[tab] = it.boundsInRoot() }
                         .bouncyClickable(scaleDown = 0.88f, onClick = onClick)
                         .clip(pill)
-                        .semantics { contentDescription = label }
+                        .semantics { contentDescription = accessibilityLabel }
                 ) {
                     Row(
                         modifier = Modifier
@@ -227,6 +237,7 @@ internal fun PetalStrideNavBar(
                         // Opens by its item's weight: measured at full width, laid out at
                         // that fraction of it, and clipped. Read in layout and draw only,
                         // so the animation never recomposes.
+                        if (showSelectedLabel) {
                         BasicText(
                             label,
                             style = labelStyle,
@@ -248,6 +259,7 @@ internal fun PetalStrideNavBar(
                                     layout(width, text.height) { text.placeRelative(gap, 0) }
                                 }
                         )
+                        }
                     }
                 }
             }
