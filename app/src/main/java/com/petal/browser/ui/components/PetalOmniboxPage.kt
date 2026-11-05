@@ -578,162 +578,8 @@ fun PetalOmniboxPage(
                     )
 
                     Column(
-                        modifier = Modifier.fillMaxSize()
+                        modifier = Modifier.fillMaxSize().statusBarsPadding()
                     ) {
-                        // Search field row pinned to top with status bar padding
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .statusBarsPadding()
-                                .padding(horizontal = 8.dp, vertical = 6.dp)
-                                .entrance(index = 0),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            TextField(
-                                value = queryState,
-                                onValueChange = { queryState = it },
-                                placeholder = {
-                                    Text(
-                                        text = stringResource(R.string.ui_search_or_type_url, currentEngine.name),
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis
-                                    )
-                                },
-                                textStyle = MaterialTheme.typography.bodyMedium.copy(
-                                    color = MaterialTheme.colorScheme.onSurface
-                                ),
-                                leadingIcon = if (showEngineSelector) {
-                                    {
-                                        Box {
-                                            IconButton(
-                                                onClick = { showEngineMenu = true },
-                                                modifier = Modifier.size(38.dp)
-                                            ) {
-                                                val engineIcon = when (currentEngine.name.lowercase()) {
-                                                    "google" -> Icons.Rounded.Search
-                                                    "duckduckgo" -> Icons.Rounded.Shield
-                                                    "startpage" -> Icons.Rounded.VpnKey
-                                                    "brave search", "brave" -> Icons.Rounded.Security
-                                                    "bing" -> Icons.Rounded.Search
-                                                    "searxng", "searx" -> Icons.Rounded.ManageSearch
-                                                    "qwant" -> Icons.Rounded.TravelExplore
-                                                    "ecosia" -> Icons.Rounded.Eco
-                                                    "torrays" -> Icons.Rounded.CloudDownload
-                                                    else -> Icons.Rounded.Search
-                                                }
-                                                Icon(
-                                                    imageVector = engineIcon,
-                                                    contentDescription = stringResource(R.string.ui_search_with_tap_to_change, currentEngine.name),
-                                                    tint = MaterialTheme.colorScheme.primary,
-                                                    modifier = Modifier.size(20.dp)
-                                                )
-                                            }
-
-                                            com.petal.browser.ui.containment.PetalPopupMenu(
-                                                expanded = showEngineMenu,
-                                                onDismissRequest = { showEngineMenu = false }
-                                            ) {
-                                                Text(
-                                                    text = stringResource(R.string.ui_search_engine),
-                                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                                                    color = MaterialTheme.colorScheme.primary,
-                                                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp)
-                                                )
-                                                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-                                                allEngines.forEach { engine ->
-                                                    val isSelected = engine.index == (currentEngineIndexStr.toIntOrNull() ?: 0)
-                                                    com.petal.browser.ui.containment.PetalPopupMenuItem(
-                                                        text = {
-                                                            Row(
-                                                                verticalAlignment = Alignment.CenterVertically,
-                                                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                                            ) {
-                                                                Text(
-                                                                    text = engine.name,
-                                                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                                                    color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
-                                                                )
-                                                                if (isSelected) {
-                                                                    Icon(
-                                                                        Icons.Rounded.Check,
-                                                                        contentDescription = null,
-                                                                        tint = MaterialTheme.colorScheme.primary,
-                                                                        modifier = Modifier.size(16.dp)
-                                                                    )
-                                                                }
-                                                            }
-                                                        },
-                                                        onClick = {
-                                                            currentEngineIndexStr = engine.index.toString()
-                                                            sp.edit()
-                                                                .putString("sp_search_engine", engine.index.toString())
-                                                                .putBoolean("searchEngineSwitch", false)
-                                                                .apply()
-                                                            showEngineMenu = false
-                                                        }
-                                                    )
-                                                }
-                                            }
-                                        }
-                                    }
-                                } else null,
-                                trailingIcon = {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        if (queryState.text.isNotEmpty()) {
-                                            IconButton(onClick = { queryState = TextFieldValue("") }) {
-                                                Icon(
-                                                    imageVector = Icons.Rounded.Close,
-                                                    contentDescription = stringResource(R.string.ui_clear_text),
-                                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                                )
-                                            }
-                                        } else {
-                                            IconButton(onClick = {
-                                                com.petal.browser.lens.PetalLensBridge.showLensBottomSheet(activity)
-                                            }) {
-                                                Icon(
-                                                    imageVector = Icons.Rounded.CenterFocusWeak,
-                                                    contentDescription = stringResource(R.string.ui_petal_qr_scanner),
-                                                    tint = MaterialTheme.colorScheme.primary
-                                                )
-                                            }
-                                            IconButton(onClick = {
-                                                PetalVoiceSearchBridge.showVoiceSearchSheet(activity) { result ->
-                                                    if (result.isNotBlank()) submitSearch(result.trim(), saveToHistory = true)
-                                                }
-                                            }) {
-                                                Icon(
-                                                    imageVector = Icons.Rounded.Mic,
-                                                    contentDescription = stringResource(R.string.ui_voice_search),
-                                                    tint = MaterialTheme.colorScheme.primary
-                                                )
-                                            }
-                                        }
-                                    }
-                                },
-                                maxLines = 3,
-                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                                keyboardActions = KeyboardActions(onSearch = {
-                                    if (queryState.text.isNotBlank()) {
-                                        submitSearch(queryState.text.trim(), saveToHistory = true)
-                                    }
-                                }),
-                                shape = RoundedCornerShape(50),
-                                colors = TextFieldDefaults.colors(
-                                    focusedContainerColor = if (isGlass) petalGroupSurfaceColor() else MaterialTheme.colorScheme.surfaceContainerHigh,
-                                    unfocusedContainerColor = if (isGlass) petalGroupSurfaceColor() else MaterialTheme.colorScheme.surfaceContainerHigh,
-                                    focusedIndicatorColor = Color.Transparent,
-                                    unfocusedIndicatorColor = Color.Transparent
-                                ),
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .liquidGlassChrome(shape = RoundedCornerShape(50), enabled = isGlass, sheenIntensity = sheen)
-                                    .focusRequester(focusRequester)
-                            )
-                        }
-
                         // Chrome-style Quick Actions Card when an active webpage is focused and user hasn't edited the search
                         if (cleanPageUrl.isNotBlank() && queryState.text.trim() == cleanPageUrl) {
                             val qaShape = RoundedCornerShape(20.dp)
@@ -1071,14 +917,8 @@ fun PetalOmniboxPage(
                                 color = if (isGlass) com.petal.browser.ui.containment.petalGroupSurfaceColor().copy(alpha = 0.35f) else MaterialTheme.colorScheme.surfaceContainerLow,
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .weight(1f, fill = false)
+                                    .weight(1f)
                                     .padding(horizontal = 8.dp, vertical = 4.dp)
-                                    .animateContentSize(
-                                        animationSpec = spring(
-                                            dampingRatio = Spring.DampingRatioNoBouncy,
-                                            stiffness = Spring.StiffnessMediumLow
-                                        )
-                                    )
                                     .liquidGlassChrome(shape = heroShape, enabled = isGlass, sheenIntensity = sheen)
                             ) {
                                 Column(
@@ -1272,6 +1112,164 @@ fun PetalOmniboxPage(
                                 }
                             }
                         }
+                        // Pin the editor to the IME; keep suggestions scrollable above it.
+                        if (suggestions.isEmpty()) {
+                            Spacer(Modifier.weight(1f))
+                        }
+                        // Editable address stays immediately above the system keyboard, Safari-style
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .navigationBarsPadding()
+                                .padding(horizontal = 8.dp, vertical = 6.dp)
+                                .entrance(index = 0),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            TextField(
+                                value = queryState,
+                                onValueChange = { queryState = it },
+                                placeholder = {
+                                    Text(
+                                        text = stringResource(R.string.ui_search_or_type_url, currentEngine.name),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                },
+                                textStyle = MaterialTheme.typography.bodyMedium.copy(
+                                    color = MaterialTheme.colorScheme.onSurface
+                                ),
+                                leadingIcon = if (showEngineSelector) {
+                                    {
+                                        Box {
+                                            IconButton(
+                                                onClick = { showEngineMenu = true },
+                                                modifier = Modifier.size(38.dp)
+                                            ) {
+                                                val engineIcon = when (currentEngine.name.lowercase()) {
+                                                    "google" -> Icons.Rounded.Search
+                                                    "duckduckgo" -> Icons.Rounded.Shield
+                                                    "startpage" -> Icons.Rounded.VpnKey
+                                                    "brave search", "brave" -> Icons.Rounded.Security
+                                                    "bing" -> Icons.Rounded.Search
+                                                    "searxng", "searx" -> Icons.Rounded.ManageSearch
+                                                    "qwant" -> Icons.Rounded.TravelExplore
+                                                    "ecosia" -> Icons.Rounded.Eco
+                                                    "torrays" -> Icons.Rounded.CloudDownload
+                                                    else -> Icons.Rounded.Search
+                                                }
+                                                Icon(
+                                                    imageVector = engineIcon,
+                                                    contentDescription = stringResource(R.string.ui_search_with_tap_to_change, currentEngine.name),
+                                                    tint = MaterialTheme.colorScheme.primary,
+                                                    modifier = Modifier.size(20.dp)
+                                                )
+                                            }
+
+                                            com.petal.browser.ui.containment.PetalPopupMenu(
+                                                expanded = showEngineMenu,
+                                                onDismissRequest = { showEngineMenu = false }
+                                            ) {
+                                                Text(
+                                                    text = stringResource(R.string.ui_search_engine),
+                                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                                    color = MaterialTheme.colorScheme.primary,
+                                                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp)
+                                                )
+                                                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                                                allEngines.forEach { engine ->
+                                                    val isSelected = engine.index == (currentEngineIndexStr.toIntOrNull() ?: 0)
+                                                    com.petal.browser.ui.containment.PetalPopupMenuItem(
+                                                        text = {
+                                                            Row(
+                                                                verticalAlignment = Alignment.CenterVertically,
+                                                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                                            ) {
+                                                                Text(
+                                                                    text = engine.name,
+                                                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                                                    color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                                                                )
+                                                                if (isSelected) {
+                                                                    Icon(
+                                                                        Icons.Rounded.Check,
+                                                                        contentDescription = null,
+                                                                        tint = MaterialTheme.colorScheme.primary,
+                                                                        modifier = Modifier.size(16.dp)
+                                                                    )
+                                                                }
+                                                            }
+                                                        },
+                                                        onClick = {
+                                                            currentEngineIndexStr = engine.index.toString()
+                                                            sp.edit()
+                                                                .putString("sp_search_engine", engine.index.toString())
+                                                                .putBoolean("searchEngineSwitch", false)
+                                                                .apply()
+                                                            showEngineMenu = false
+                                                        }
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+                                } else null,
+                                trailingIcon = {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        if (queryState.text.isNotEmpty()) {
+                                            IconButton(onClick = { queryState = TextFieldValue("") }) {
+                                                Icon(
+                                                    imageVector = Icons.Rounded.Close,
+                                                    contentDescription = stringResource(R.string.ui_clear_text),
+                                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                                )
+                                            }
+                                        } else {
+                                            IconButton(onClick = {
+                                                com.petal.browser.lens.PetalLensBridge.showLensBottomSheet(activity)
+                                            }) {
+                                                Icon(
+                                                    imageVector = Icons.Rounded.CenterFocusWeak,
+                                                    contentDescription = stringResource(R.string.ui_petal_qr_scanner),
+                                                    tint = MaterialTheme.colorScheme.primary
+                                                )
+                                            }
+                                            IconButton(onClick = {
+                                                PetalVoiceSearchBridge.showVoiceSearchSheet(activity) { result ->
+                                                    if (result.isNotBlank()) submitSearch(result.trim(), saveToHistory = true)
+                                                }
+                                            }) {
+                                                Icon(
+                                                    imageVector = Icons.Rounded.Mic,
+                                                    contentDescription = stringResource(R.string.ui_voice_search),
+                                                    tint = MaterialTheme.colorScheme.primary
+                                                )
+                                            }
+                                        }
+                                    }
+                                },
+                                maxLines = 3,
+                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                                keyboardActions = KeyboardActions(onSearch = {
+                                    if (queryState.text.isNotBlank()) {
+                                        submitSearch(queryState.text.trim(), saveToHistory = true)
+                                    }
+                                }),
+                                shape = RoundedCornerShape(50),
+                                colors = TextFieldDefaults.colors(
+                                    focusedContainerColor = if (isGlass) petalGroupSurfaceColor() else MaterialTheme.colorScheme.surfaceContainerHigh,
+                                    unfocusedContainerColor = if (isGlass) petalGroupSurfaceColor() else MaterialTheme.colorScheme.surfaceContainerHigh,
+                                    focusedIndicatorColor = Color.Transparent,
+                                    unfocusedIndicatorColor = Color.Transparent
+                                ),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .liquidGlassChrome(shape = RoundedCornerShape(50), enabled = isGlass, sheenIntensity = sheen)
+                                    .focusRequester(focusRequester)
+                            )
+                        }
+
                     }
                 }
             }
