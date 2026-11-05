@@ -1942,6 +1942,48 @@ private fun PetalTabCard(
             .then(if (borderStroke != null) Modifier.border(borderStroke, PetalContainmentShapes.Hero) else Modifier)
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
+            // Large webpage preview, with the title and group tag below it.
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.surface),
+                contentAlignment = Alignment.Center
+            ) {
+                Crossfade(targetState = cachedPreview?.takeUnless { it.isRecycled }, label = "tabPreviewLoad") { preview ->
+                    if (preview != null) {
+                        Image(
+                            bitmap = preview.asImageBitmap(),
+                            contentDescription = stringResource(R.string.ui_live_preview_of, tab.title),
+                            contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    } else {
+                        PetalHomePreviewCard(tab = tab, accentColor = accentColor)
+                    }
+                }
+                if (!isSelectionMode) {
+                    IconButton(
+                        onClick = onTabClose,
+                        modifier = Modifier.align(Alignment.TopEnd).size(48.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(30.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.88f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                Icons.Rounded.Close,
+                                contentDescription = stringResource(R.string.ui_close_tab),
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    }
+                }
+            }
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -1986,19 +2028,6 @@ private fun PetalTabCard(
                             Icon(Icons.Rounded.Check, contentDescription = stringResource(R.string.ui_selected), tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.padding(3.dp))
                         }
                     }
-                    if (!isSelectionMode) {
-                        IconButton(
-                            onClick = onTabClose,
-                            modifier = Modifier.size(24.dp)
-                        ) {
-                            Icon(
-                                Icons.Rounded.Close,
-                                contentDescription = stringResource(R.string.ui_close_tab),
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.size(16.dp)
-                            )
-                        }
-                    }
                 }
             }
 
@@ -2015,27 +2044,6 @@ private fun PetalTabCard(
                         containerColor = groupColor,
                         contentColor = Color.White
                     )
-                }
-            }
-
-            // Tab WebView preview thumbnail
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.surface),
-                contentAlignment = Alignment.Center
-            ) {
-                Crossfade(targetState = cachedPreview?.takeUnless { it.isRecycled }, label = "tabPreviewLoad") { preview ->
-                    if (preview != null) {
-                        Image(
-                            bitmap = preview.asImageBitmap(),
-                            contentDescription = stringResource(R.string.ui_live_preview_of, tab.title),
-                            contentScale = androidx.compose.ui.layout.ContentScale.Crop,
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    } else {
-                        PetalHomePreviewCard(tab = tab, accentColor = accentColor)
-                    }
                 }
             }
         }
