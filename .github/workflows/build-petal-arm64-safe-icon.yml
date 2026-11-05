@@ -8,6 +8,7 @@ on:
       - app/build.gradle
       - app/src/main/java/com/petal/browser/ui/components/PetalMergedBar.kt
       - app/src/main/java/com/petal/browser/compose/tabs/PetalTabGridSwitcher.kt
+      - app/src/main/java/com/petal/browser/ui/components/PetalOmniboxPage.kt
       - app/src/main/java/com/petal/browser/ui/components/BarPrefs.kt
       - app/src/main/res/drawable/ic_launcher_foreground.xml
       - app/src/main/res/drawable/ic_launcher_monochrome.xml
