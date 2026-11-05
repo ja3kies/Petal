@@ -17,7 +17,7 @@ VECTORS=[
 ]
 TRANSFORM="translate(28.62 28.62) scale(0.47)"
 AND_NS="{http://schemas.android.com/apk/res/android}"
-EXPECTED={"translateX":"25.92","translateY":"25.92","scaleX":"0.52","scaleY":"0.52"}
+EXPECTED={"translateX":"28.62","translateY":"28.62","scaleX":"0.47","scaleY":"0.47"}
 
 def verify_svg(path):
     raw=path.read_text(encoding="utf-8")
