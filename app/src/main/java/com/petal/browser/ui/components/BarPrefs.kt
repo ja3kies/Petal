@@ -19,6 +19,7 @@ object BarPrefs {
     const val KEY_BAR_COLLAPSE_STYLE = "sp_bar_collapse_style"
     const val KEY_ADDRESS_BAR_POSITION = "sp_address_bar_position"
     const val KEY_HIDE_BARS_ON_SCROLL = "sp_hide_bars_on_scroll"
+    const val KEY_UNIFIED_BOTTOM_MIGRATED = "sp_unified_bottom_migrated_461"
 
     const val STYLE_CLASSIC = "CLASSIC"
     const val STYLE_MERGE = "MERGE"
@@ -29,14 +30,14 @@ object BarPrefs {
     const val COLLAPSE_PILL = "PILL"
     const val COLLAPSE_HIDE = "HIDE"
 
-    const val DEFAULT_MERGE_LEADING = "TABS"
-    const val DEFAULT_MERGE_TRAILING = "NEW_TAB,MENU"
+    const val DEFAULT_MERGE_LEADING = "BACK"
+    const val DEFAULT_MERGE_TRAILING = "TABS,MENU"
 
     const val MAX_MERGE_ACTIONS_TOTAL = 5
 
     @JvmStatic
     fun isMergeStyle(sp: SharedPreferences): Boolean =
-        STYLE_MERGE.equals(sp.getString(KEY_ADDRESS_BAR_STYLE, STYLE_CLASSIC), ignoreCase = true)
+        STYLE_MERGE.equals(sp.getString(KEY_ADDRESS_BAR_STYLE, STYLE_MERGE), ignoreCase = true)
 
     @JvmStatic
     fun isStackedLayout(sp: SharedPreferences): Boolean =
@@ -48,11 +49,32 @@ object BarPrefs {
 
     @JvmStatic
     fun isBottomPosition(sp: SharedPreferences): Boolean =
-        "BOTTOM".equals(sp.getString(KEY_ADDRESS_BAR_POSITION, "TOP"), ignoreCase = true)
+        "BOTTOM".equals(sp.getString(KEY_ADDRESS_BAR_POSITION, "BOTTOM"), ignoreCase = true)
 
     @JvmStatic
     fun isHideOnScrollEnabled(sp: SharedPreferences): Boolean =
         sp.getBoolean(KEY_HIDE_BARS_ON_SCROLL, true)
+
+    /**
+     * One-time migration from the old two-bar layout. Users can select Classic or Top
+     * again in Settings; the migration will never overwrite their later preference.
+     * Customized merge actions and layout remain untouched.
+     */
+    @JvmStatic
+    fun migrateToUnifiedBottom(sp: SharedPreferences) {
+        if (sp.getBoolean(KEY_UNIFIED_BOTTOM_MIGRATED, false)) return
+        val editor = sp.edit()
+        if (sp.getString(KEY_ADDRESS_BAR_STYLE, STYLE_CLASSIC).equals(STYLE_CLASSIC, ignoreCase = true)) {
+            editor.putString(KEY_ADDRESS_BAR_STYLE, STYLE_MERGE)
+        }
+        if (sp.getString(KEY_ADDRESS_BAR_POSITION, "TOP").equals("TOP", ignoreCase = true)) {
+            editor.putString(KEY_ADDRESS_BAR_POSITION, "BOTTOM")
+        }
+        if (!sp.contains(KEY_MERGE_LAYOUT)) editor.putString(KEY_MERGE_LAYOUT, LAYOUT_SINGLE)
+        if (!sp.contains(KEY_MERGE_LEADING)) editor.putString(KEY_MERGE_LEADING, DEFAULT_MERGE_LEADING)
+        if (!sp.contains(KEY_MERGE_TRAILING)) editor.putString(KEY_MERGE_TRAILING, DEFAULT_MERGE_TRAILING)
+        editor.putBoolean(KEY_UNIFIED_BOTTOM_MIGRATED, true).apply()
+    }
 
     /**
      * Reads leading and trailing merge button actions from SharedPreferences, enforcing all

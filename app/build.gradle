@@ -25,8 +25,8 @@ android {
         applicationId "com.petal.browser"
         minSdkVersion 26
         targetSdkVersion 36
-        versionCode 460
-        versionName "4.6.0"
+        versionCode 461
+        versionName "4.6.1"
         multiDexEnabled true
         vectorDrawables.useSupportLibrary = true
         resConfigs "ar", "b+hi+Latn", "b+sr+Latn", "cs", "de", "el", "es", "et", "fa", "fr", "he", "hi", "hu", "id", "it", "ja", "nl", "pl", "pt", "ro", "ru", "sr", "sv", "tr", "uk", "vi", "zh", "zh-rTW"
@@ -50,9 +50,15 @@ android {
         abi {
             enable true
             reset()
-            include 'arm64-v8a', 'armeabi-v7a', 'x86', 'x86_64'
-            // Keep the universal APK so all supported ABIs are available in one package.
-            universalApk true
+            // Only opt-in, test APK builds restrict output to ARM64. Defaults stay unchanged.
+            if (project.hasProperty('PETAL_ONLY_ARM64') &&
+                project.property('PETAL_ONLY_ARM64').toString() == 'true') {
+                include 'arm64-v8a'
+                universalApk false
+            } else {
+                include 'arm64-v8a', 'armeabi-v7a', 'x86', 'x86_64'
+                universalApk true
+            }
         }
     }
 
@@ -175,6 +181,7 @@ configurations.all {
 }
 
 dependencies {
+    testImplementation 'junit:junit:4.13.2'
     implementation 'com.google.android.material:material:1.14.0'
     implementation 'androidx.preference:preference:1.2.1'
     implementation 'com.unity3d.ads:unity-ads:4.21.0'

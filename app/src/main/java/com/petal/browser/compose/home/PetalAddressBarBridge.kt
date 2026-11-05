@@ -161,8 +161,8 @@ object PetalAddressBarBridge {
                 var fontWidthVal by remember { mutableFloatStateOf(sp.getFloat("sp_font_width", 92f)) }
                 var fontWeightVal by remember { mutableIntStateOf(sp.getInt("sp_font_weight", 750)) }
                 var fontRoundnessVal by remember { mutableFloatStateOf(sp.getFloat("sp_font_roundness", 100f)) }
-                var addressBarPosition by remember { mutableStateOf(sp.getString(BarPrefs.KEY_ADDRESS_BAR_POSITION, "TOP") ?: "TOP") }
-                var addressBarStyle by remember { mutableStateOf(sp.getString(BarPrefs.KEY_ADDRESS_BAR_STYLE, BarPrefs.STYLE_CLASSIC) ?: BarPrefs.STYLE_CLASSIC) }
+                var addressBarPosition by remember { mutableStateOf(sp.getString(BarPrefs.KEY_ADDRESS_BAR_POSITION, "BOTTOM") ?: "BOTTOM") }
+                var addressBarStyle by remember { mutableStateOf(sp.getString(BarPrefs.KEY_ADDRESS_BAR_STYLE, BarPrefs.STYLE_MERGE) ?: BarPrefs.STYLE_MERGE) }
 
                 DisposableEffect(sp) {
                     val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
@@ -178,11 +178,11 @@ object PetalAddressBarBridge {
                             "sp_font_weight" -> fontWeightVal = sp.getInt("sp_font_weight", 750)
                             "sp_font_roundness" -> fontRoundnessVal = sp.getFloat("sp_font_roundness", 100f)
                             BarPrefs.KEY_ADDRESS_BAR_POSITION -> {
-                                addressBarPosition = sp.getString(BarPrefs.KEY_ADDRESS_BAR_POSITION, "TOP") ?: "TOP"
+                                addressBarPosition = sp.getString(BarPrefs.KEY_ADDRESS_BAR_POSITION, "BOTTOM") ?: "BOTTOM"
                                 (activity as? BrowserActivity)?.let { act -> act.window.decorView.post { act.applyAddressBarPosition() } }
                             }
                             BarPrefs.KEY_ADDRESS_BAR_STYLE -> {
-                                addressBarStyle = sp.getString(BarPrefs.KEY_ADDRESS_BAR_STYLE, BarPrefs.STYLE_CLASSIC) ?: BarPrefs.STYLE_CLASSIC
+                                addressBarStyle = sp.getString(BarPrefs.KEY_ADDRESS_BAR_STYLE, BarPrefs.STYLE_MERGE) ?: BarPrefs.STYLE_MERGE
                                 (activity as? BrowserActivity)?.let { act -> act.window.decorView.post { act.applyAddressBarPosition() } }
                             }
                             BarPrefs.KEY_MERGE_LAYOUT, BarPrefs.KEY_MERGE_LEADING, BarPrefs.KEY_MERGE_TRAILING -> {

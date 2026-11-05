@@ -759,6 +759,7 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
         }
         
         sp = PreferenceManager.getDefaultSharedPreferences(context);
+        com.petal.browser.ui.components.BarPrefs.migrateToUnifiedBottom(sp);
         try {
             sp.registerOnSharedPreferenceChangeListener(toolbarPrefsListener);
         } catch (Throwable ignored) {}
@@ -2999,7 +3000,7 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
                 return;
             }
 
-            String pos = sp.getString("sp_address_bar_position", "TOP");
+            String pos = sp.getString("sp_address_bar_position", "BOTTOM");
             boolean isBottom = "BOTTOM".equalsIgnoreCase(pos);
 
             if (addressBar == null) return;

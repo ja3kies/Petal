@@ -85,6 +85,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -192,8 +193,13 @@ fun PetalBottomNavBar(
         )
     }
 
-    val tabsLabel = "Tabs"
-    val newTabLabel = "New"
+    val homeLabel = stringResource(com.petal.browser.R.string.ui_home)
+    val tabsLabel = stringResource(com.petal.browser.R.string.ui_tabs)
+    val tabsAccessibilityLabel = stringResource(com.petal.browser.R.string.ui_tabs_count, tabCount)
+    val menuLabel = stringResource(com.petal.browser.R.string.ui_menu)
+    val searchLabel = stringResource(com.petal.browser.R.string.ui_search)
+    val newTabLabel = stringResource(com.petal.browser.R.string.ui_new_tab_short)
+    val newTabAccessibilityLabel = stringResource(com.petal.browser.R.string.ui_new_tab)
 
     val effectiveFloating = isFloatingStyle && !isBottomAddressBar
     val navCtx = androidx.compose.ui.platform.LocalContext.current
@@ -271,7 +277,7 @@ fun PetalBottomNavBar(
                         val sc = 1f + 0.22f * p
                         scaleX = sc
                         scaleY = sc
-                        alpha = 1f - 0.7f * p
+                        alpha = 1f - p
                     }
                 )
             }
@@ -325,7 +331,7 @@ fun PetalBottomNavBar(
                 ) {
                     ExpressiveNavTabItem(
                         selected = selectedTab == PetalNavTab.HOME,
-                        label = "Home",
+                        label = homeLabel,
                         index = 0,
                         isLiquidGlass = isLiquidGlass,
                         modifier = Modifier.weight(1f),
@@ -348,7 +354,7 @@ fun PetalBottomNavBar(
                                     painter = androidx.compose.ui.res.painterResource(
                                         if (filled) com.petal.browser.R.drawable.home_filled else com.petal.browser.R.drawable.home
                                     ),
-                                    contentDescription = "Home",
+                                    contentDescription = null,
                                     tint = tint,
                                     modifier = Modifier.size(24.dp)
                                 )
@@ -360,6 +366,7 @@ fun PetalBottomNavBar(
                     ExpressiveNavTabItem(
                         selected = selectedTab == PetalNavTab.NEW_TAB,
                         label = newTabLabel,
+                        accessibilityLabel = newTabAccessibilityLabel,
                         index = 1,
                         isLiquidGlass = isLiquidGlass,
                         modifier = Modifier.weight(1f),
@@ -376,7 +383,7 @@ fun PetalBottomNavBar(
                             )
                             Icon(
                                 imageVector = Icons.Rounded.Add,
-                                contentDescription = "New Tab",
+                                contentDescription = null,
                                 tint = tint,
                                 modifier = Modifier
                                     .size(24.dp)
@@ -393,15 +400,15 @@ fun PetalBottomNavBar(
                     if (centerSearch) {
                         ExpressiveNavTabItem(
                             selected = false,
-                            label = "Search",
+                            label = searchLabel,
                             index = 2,
                             isLiquidGlass = isLiquidGlass,
                             modifier = Modifier.weight(1f),
-                            icon = { _, _ ->
+                            icon = { _, tint ->
                                 Icon(
                                     painter = androidx.compose.ui.res.painterResource(com.petal.browser.R.drawable.ic_petal_search),
-                                    contentDescription = "Search",
-                                    tint = MaterialTheme.colorScheme.primary,
+                                    contentDescription = null,
+                                    tint = tint,
                                     modifier = Modifier.size(24.dp)
                                 )
                             },
@@ -411,7 +418,8 @@ fun PetalBottomNavBar(
 
                     ExpressiveNavTabItem(
                         selected = selectedTab == PetalNavTab.TABS,
-                        label = "Tabs",
+                        label = tabsLabel,
+                        accessibilityLabel = tabsAccessibilityLabel,
                         badgeText = if (tabCount > 99) "99+" else tabCount.toString(),
                         index = 2,
                         isLiquidGlass = isLiquidGlass,
@@ -433,7 +441,7 @@ fun PetalBottomNavBar(
 
                     ExpressiveNavTabItem(
                         selected = selectedTab == PetalNavTab.MENU,
-                        label = "Menu",
+                        label = menuLabel,
                         index = 3,
                         isLiquidGlass = isLiquidGlass,
                         modifier = Modifier.weight(1f),
@@ -450,7 +458,7 @@ fun PetalBottomNavBar(
                             )
                             Icon(
                                 imageVector = Icons.Rounded.MoreVert,
-                                contentDescription = "Menu",
+                                contentDescription = null,
                                 tint = tint,
                                 modifier = Modifier
                                     .size(24.dp)
@@ -643,6 +651,7 @@ internal fun TabCountBadge(color: Color, count: Int, scale: Float = 1f) {
 private fun ExpressiveNavTabItem(
     selected: Boolean,
     label: String,
+    accessibilityLabel: String = label,
     index: Int,
     icon: @Composable (isSelected: Boolean, tint: Color) -> Unit,
     onClick: () -> Unit,
@@ -741,7 +750,7 @@ private fun ExpressiveNavTabItem(
                 onClick = onClick
             )
             .padding(horizontal = 2.dp, vertical = 1.dp)
-            .semantics { contentDescription = label }
+            .semantics { contentDescription = accessibilityLabel }
     ) {
         Surface(
             shape = indicatorShape,

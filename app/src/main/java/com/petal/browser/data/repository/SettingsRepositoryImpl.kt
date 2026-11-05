@@ -405,7 +405,7 @@ class SettingsRepositoryImpl @Inject constructor(
     }
 
     override val addressBarStyle: Flow<String> = preferenceFlow(com.petal.browser.ui.components.BarPrefs.KEY_ADDRESS_BAR_STYLE) {
-        sp.getString(com.petal.browser.ui.components.BarPrefs.KEY_ADDRESS_BAR_STYLE, com.petal.browser.ui.components.BarPrefs.STYLE_CLASSIC) ?: com.petal.browser.ui.components.BarPrefs.STYLE_CLASSIC
+        sp.getString(com.petal.browser.ui.components.BarPrefs.KEY_ADDRESS_BAR_STYLE, com.petal.browser.ui.components.BarPrefs.STYLE_MERGE) ?: com.petal.browser.ui.components.BarPrefs.STYLE_MERGE
     }
 
     override val mergeLeading: Flow<String> = preferenceFlow(com.petal.browser.ui.components.BarPrefs.KEY_MERGE_LEADING) {
@@ -434,7 +434,7 @@ class SettingsRepositoryImpl @Inject constructor(
     }
 
     override val addressBarPosition: Flow<String> = preferenceFlow("sp_address_bar_position") {
-        sp.getString("sp_address_bar_position", "TOP") ?: "TOP"
+        sp.getString("sp_address_bar_position", "BOTTOM") ?: "BOTTOM"
     }
 
     override val appLockEnabled: Flow<Boolean> = preferenceFlow("sp_app_lock_enabled") {
