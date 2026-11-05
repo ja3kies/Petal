@@ -115,4 +115,71 @@ class BarPrefsTest {
         val actions = BarAction.parseActionList("tabs,new_tab,menu")
         assertEquals(listOf(BarAction.TABS, BarAction.NEW_TAB, BarAction.MENU), actions)
     }
+
+    private fun mutablePrefs(initial: Map<String, Any?> = emptyMap()): Pair<SharedPreferences, MutableMap<String, Any?>> {
+        val state = initial.toMutableMap()
+        val editor = Proxy.newProxyInstance(
+            SharedPreferences.Editor::class.java.classLoader,
+            arrayOf(SharedPreferences.Editor::class.java)
+        ) { proxy, method, args ->
+            when (method.name) {
+                "putString", "putBoolean" -> { state[args!![0] as String] = args[1]; proxy }
+                "apply" -> null
+                "commit" -> true
+                else -> proxy
+            }
+        } as SharedPreferences.Editor
+        val prefs = Proxy.newProxyInstance(
+            SharedPreferences::class.java.classLoader,
+            arrayOf(SharedPreferences::class.java)
+        ) { _, method, args ->
+            when (method.name) {
+                "getString" -> state[args!![0] as String] as? String ?: args[1]
+                "getBoolean" -> state[args!![0] as String] as? Boolean ?: args[1]
+                "contains" -> state.containsKey(args!![0] as String)
+                "edit" -> editor
+                else -> null
+            }
+        } as SharedPreferences
+        return prefs to state
+    }
+
+    @Test
+    fun migrationUnifiesLegacySplitBarOnce() {
+        val (prefs, state) = mutablePrefs(
+            mapOf(BarPrefs.KEY_ADDRESS_BAR_STYLE to BarPrefs.STYLE_CLASSIC,
+                  BarPrefs.KEY_ADDRESS_BAR_POSITION to "TOP")
+        )
+        BarPrefs.migrateToUnifiedBottom(prefs)
+        assertEquals(BarPrefs.STYLE_MERGE, state[BarPrefs.KEY_ADDRESS_BAR_STYLE])
+        assertEquals("BOTTOM", state[BarPrefs.KEY_ADDRESS_BAR_POSITION])
+        assertEquals("BACK", state[BarPrefs.KEY_MERGE_LEADING])
+        assertEquals("TABS,MENU", state[BarPrefs.KEY_MERGE_TRAILING])
+        assertEquals(BarPrefs.LAYOUT_SINGLE, state[BarPrefs.KEY_MERGE_LAYOUT])
+        assertEquals(true, state[BarPrefs.KEY_UNIFIED_BOTTOM_MIGRATED])
+
+        // After migration, the user's later manual preferences must survive restarts.
+        state[BarPrefs.KEY_ADDRESS_BAR_STYLE] = BarPrefs.STYLE_CLASSIC
+        state[BarPrefs.KEY_ADDRESS_BAR_POSITION] = "TOP"
+        BarPrefs.migrateToUnifiedBottom(prefs)
+        assertEquals(BarPrefs.STYLE_CLASSIC, state[BarPrefs.KEY_ADDRESS_BAR_STYLE])
+        assertEquals("TOP", state[BarPrefs.KEY_ADDRESS_BAR_POSITION])
+    }
+
+    @Test
+    fun migrationPreservesCustomToolbarActionsAndLayout() {
+        val (prefs, state) = mutablePrefs(
+            mapOf(
+                BarPrefs.KEY_ADDRESS_BAR_STYLE to BarPrefs.STYLE_MERGE,
+                BarPrefs.KEY_ADDRESS_BAR_POSITION to "BOTTOM",
+                BarPrefs.KEY_MERGE_LEADING to "HOME",
+                BarPrefs.KEY_MERGE_TRAILING to "TABS,MENU",
+                BarPrefs.KEY_MERGE_LAYOUT to BarPrefs.LAYOUT_STACKED
+            )
+        )
+        BarPrefs.migrateToUnifiedBottom(prefs)
+        assertEquals("HOME", state[BarPrefs.KEY_MERGE_LEADING])
+        assertEquals("TABS,MENU", state[BarPrefs.KEY_MERGE_TRAILING])
+        assertEquals(BarPrefs.LAYOUT_STACKED, state[BarPrefs.KEY_MERGE_LAYOUT])
+    }
 }

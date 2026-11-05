@@ -97,6 +97,13 @@ jobs:
           echo "RELEASE_KEY_ALIAS=$alias" >> "$GITHUB_ENV"
           echo "RELEASE_KEY_PASSWORD=$keypass" >> "$GITHUB_ENV"
 
+      - name: Run toolbar preference regression tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          chmod +x gradlew
+          ./gradlew :app:testGithubDebugUnitTest --tests 'com.petal.browser.ui.components.BarPrefsTest' --no-daemon --stacktrace
+
       - name: Build GitHub release for ARM64-v8a only
         shell: bash
         run: |
