@@ -48,6 +48,7 @@ internal fun PetalSearchGlassButton(
     size: Dp = 64.dp
 ) {
     val scheme = MaterialTheme.colorScheme
+    val searchLabel = stringResource(R.string.ui_search)
     val context = LocalContext.current
     LocalPetalGlassRevision.current
     val prefs = remember(context) { androidx.preference.PreferenceManager.getDefaultSharedPreferences(context) }
@@ -77,7 +78,7 @@ internal fun PetalSearchGlassButton(
             .liquidGlass(CircleShape, scheme.surfaceContainerHigh, glassBar)
             .clip(CircleShape)
             .bouncyClickable(scaleDown = 0.86f, onClick = onClick)
-            .semantics { contentDescription = stringResource(R.string.ui_search) },
+            .semantics { contentDescription = searchLabel },
         contentAlignment = Alignment.Center
     ) {
         Icon(
