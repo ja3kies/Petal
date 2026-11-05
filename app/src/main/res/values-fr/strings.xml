@@ -336,6 +336,7 @@
     <string name="ui_move_right">Déplacer à droite</string>
     <string name="ui_new_tab">Nouvel onglet</string>
     <string name="ui_new_tab_short">Nouveau</string>
+    <string name="ui_tabs_count">Onglets : %1$d</string>
     <string name="ui_bookmarks">Signets</string>
     <string name="ui_history">Histoire</string>
     <string name="ui_downloads">Téléchargements</string>

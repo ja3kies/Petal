@@ -70,8 +70,8 @@ private val NavOrder5 = listOf(PetalNavTab.HOME, PetalNavTab.NEW_TAB, PetalNavTa
 private val NAV_FIXED_WIDTH = (4 * 52 + 3 * 4 + 20 + 8).dp
 
 /** Same, when the bar shares the row with the separate search button: tighter item padding. */
-private val NAV_FIXED_WIDTH_COMPACT = (4 * 46 + 3 * 2 + 16 + 8).dp
-private val NAV_FIXED_WIDTH_COMPACT5 = (5 * 46 + 4 * 2 + 16 + 8).dp
+private val NAV_FIXED_WIDTH_COMPACT = (4 * 48 + 3 * 2 + 16 + 8).dp
+private val NAV_FIXED_WIDTH_COMPACT5 = (5 * 48 + 4 * 2 + 16 + 8).dp
 
 /**
  * Stride's floating nav bar, in Petal: a glass pill whose selected item opens its label
@@ -101,7 +101,8 @@ internal fun PetalStrideNavBar(
     val scheme = MaterialTheme.colorScheme
     val pill = CircleShape
     val compactAll = compact || includeSearch
-    val itemPadH = if (compactAll) 11.dp else 14.dp
+    // Icon 24dp + 2 × 12dp padding = a 48dp touch target in compact mode.
+    val itemPadH = if (compactAll) 12.dp else 14.dp
     val rowPadH = if (compactAll) 8.dp else 10.dp
     val itemGap = if (compactAll) 2.dp else 4.dp
     val fixedWidth = if (includeSearch) NAV_FIXED_WIDTH_COMPACT5 else if (compact) NAV_FIXED_WIDTH_COMPACT else NAV_FIXED_WIDTH
@@ -198,6 +199,7 @@ internal fun PetalStrideNavBar(
                 }
                 val accessibilityLabel = when (tab) {
                     PetalNavTab.NEW_TAB -> stringResource(com.petal.browser.R.string.ui_new_tab)
+                    PetalNavTab.TABS -> stringResource(com.petal.browser.R.string.ui_tabs_count, tabCount)
                     else -> label
                 }
                 val onClick = when (tab) {

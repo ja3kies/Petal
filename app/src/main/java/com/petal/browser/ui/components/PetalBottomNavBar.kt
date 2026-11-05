@@ -195,6 +195,7 @@ fun PetalBottomNavBar(
 
     val homeLabel = stringResource(com.petal.browser.R.string.ui_home)
     val tabsLabel = stringResource(com.petal.browser.R.string.ui_tabs)
+    val tabsAccessibilityLabel = stringResource(com.petal.browser.R.string.ui_tabs_count, tabCount)
     val menuLabel = stringResource(com.petal.browser.R.string.ui_menu)
     val searchLabel = stringResource(com.petal.browser.R.string.ui_search)
     val newTabLabel = stringResource(com.petal.browser.R.string.ui_new_tab_short)
@@ -418,6 +419,7 @@ fun PetalBottomNavBar(
                     ExpressiveNavTabItem(
                         selected = selectedTab == PetalNavTab.TABS,
                         label = tabsLabel,
+                        accessibilityLabel = tabsAccessibilityLabel,
                         badgeText = if (tabCount > 99) "99+" else tabCount.toString(),
                         index = 2,
                         isLiquidGlass = isLiquidGlass,
