@@ -1,0 +1,52 @@
+name: Petal approved launcher PNG regeneration
+
+on:
+  push:
+    branches:
+      - fix/floating-navbar-ux-20261105
+    paths:
+      - .github/workflows/regenerate-petal-launcher.yml
+      - docs/branding/petal-logo.svg
+      - docs/branding/petal-monochrome.svg
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    if: github.repository == 'ja3kies/Petal' && github.ref == 'refs/heads/fix/floating-navbar-ux-20261105'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+          fetch-depth: 1
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install SVG renderer
+        run: python -m pip install --disable-pip-version-check 'CairoSVG==2.8.2' 'Pillow==11.3.0'
+
+      - name: Generate PNG fallbacks (5 densities, 3 variants)
+        run: python tools/generate_petal_launcher_pngs.py
+
+      - name: Commit only generated launcher PNGs
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add app/src/main/res/mipmap-mdpi/ic_launcher*.png
+          git add app/src/main/res/mipmap-hdpi/ic_launcher*.png
+          git add app/src/main/res/mipmap-xhdpi/ic_launcher*.png
+          git add app/src/main/res/mipmap-xxhdpi/ic_launcher*.png
+          git add app/src/main/res/mipmap-xxxhdpi/ic_launcher*.png
+          git diff --cached --check
+          if git diff --cached --quiet; then
+            echo "All PNG assets already match the approved SVGs."
+          else
+            git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'chore(branding): regenerate launcher PNG density fallbacks'
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+          fi
