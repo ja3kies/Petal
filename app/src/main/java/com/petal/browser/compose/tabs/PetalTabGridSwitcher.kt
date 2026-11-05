@@ -26,6 +26,9 @@ import androidx.compose.foundation.background
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -179,6 +182,7 @@ fun PetalTabGridSwitcher(
     val context = LocalContext.current
     val sp = remember { androidx.preference.PreferenceManager.getDefaultSharedPreferences(context) }
     var searchQuery by remember { mutableStateOf("") }
+    var showTabSearch by remember { mutableStateOf(false) }
     var displayMode by remember {
         val savedMode = sp.getString("sp_tab_display_mode", "GRID") ?: "GRID"
         mutableStateOf(try { TabDisplayMode.valueOf(savedMode) } catch (e: Exception) { TabDisplayMode.GRID })
@@ -582,7 +586,7 @@ fun PetalTabGridSwitcher(
                     title = if (selectionMode) "${selectedTabIds.size} selected" else when (selectedCategory) {
                         TabCategory.INCOGNITO -> "Incognito Tabs"
                         TabCategory.GROUPS -> "Tab Groups"
-                        TabCategory.REGULAR -> "Tab Manager"
+                        TabCategory.REGULAR -> stringResource(R.string.ui_tabs)
                     },
                     subtitle = if (selectionMode) "Choose an action for selected tabs" else when (selectedCategory) {
                         TabCategory.INCOGNITO -> if (incognitoTabCount == 1) "1 private tab open" else "$incognitoTabCount private tabs open"
@@ -618,6 +622,15 @@ fun PetalTabGridSwitcher(
                                 onClick = { leaveSelectionMode() }
                             )
                         }
+
+                        HeaderActionIcon(
+                            icon = if (showTabSearch) Icons.Rounded.Close else Icons.Rounded.Search,
+                            contentDescription = stringResource(if (showTabSearch) R.string.ui_clear_search else R.string.ui_search),
+                            onClick = {
+                                showTabSearch = !showTabSearch
+                                if (!showTabSearch) searchQuery = ""
+                            }
+                        )
 
                         HeaderActionIcon(
                             icon = if (displayMode == TabDisplayMode.GRID) Icons.Rounded.ViewList else Icons.Rounded.GridView,
@@ -712,6 +725,13 @@ fun PetalTabGridSwitcher(
                         onSelect = { selectedCategory = it }
                     )
 
+                    // Keep the overview focused on thumbnails until search is requested.
+                    AnimatedVisibility(
+                        visible = showTabSearch,
+                        enter = androidx.compose.animation.expandVertically() + fadeIn(),
+                        exit = androidx.compose.animation.shrinkVertically() + fadeOut()
+                    ) {
+                    Column {
                     Spacer(Modifier.height(10.dp))
 
                     // ── Real-time tab & group search ─────────────
@@ -760,6 +780,8 @@ fun PetalTabGridSwitcher(
                             .liquidGlassChrome(shape = tabSearchShape, enabled = isGlass, sheenIntensity = 0.45f)
                     )
 
+                    }
+                    }
 
                     // ── Inactive Items Banner (Chrome / Brave style matching image.png) ──
                     val inactiveCount = inactiveTabs.size
@@ -839,12 +861,6 @@ fun PetalTabGridSwitcher(
                             scaleY = 1f - 0.015f * newTabExitProgress
                         }
                         .nestedScroll(vaultNestedScrollConnection)
-                        .animateContentSize(
-                            animationSpec = spring(
-                                dampingRatio = Spring.DampingRatioNoBouncy,
-                                stiffness = Spring.StiffnessMediumLow
-                            )
-                        )
                 ) {
                     // ── Pull-to-reveal Vault indicator ──
                     // Drawn above the tabs (zIndex) and centred in the gap the tabs leave when pulled down,
@@ -933,7 +949,7 @@ fun PetalTabGridSwitcher(
                                     columns = GridCells.Fixed(2),
                                     horizontalArrangement = Arrangement.spacedBy(14.dp),
                                     verticalArrangement = Arrangement.spacedBy(14.dp),
-                                    contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 88.dp),
+                                    contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 112.dp),
                                     modifier = Modifier.fillMaxSize()
                                 ) {
                                     items(filteredGroups, key = { it.id }) { group ->
@@ -982,7 +998,7 @@ fun PetalTabGridSwitcher(
                             columns = GridCells.Fixed(2),
                             horizontalArrangement = Arrangement.spacedBy(14.dp),
                             verticalArrangement = Arrangement.spacedBy(14.dp),
-                            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 88.dp),
+                            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 112.dp),
                             modifier = Modifier
                                 .fillMaxSize()
                                 .scrollMotionBlur(gridState)
@@ -1102,7 +1118,7 @@ fun PetalTabGridSwitcher(
                         else -> LazyColumn(
                             state = listState,
                             verticalArrangement = Arrangement.spacedBy(10.dp),
-                            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 88.dp),
+                            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 112.dp),
                             modifier = Modifier
                                 .fillMaxSize()
                                 .scrollMotionBlur(listState)
@@ -1330,6 +1346,52 @@ fun PetalTabGridSwitcher(
                 }
             }
 
+            // iOS-inspired compact overview controls. Closing all tabs always requires confirmation.
+            AnimatedVisibility(
+                visible = !selectionMode && !isVaultVisible,
+                enter = fadeIn(animationSpec = tween(180)) +
+                    slideInVertically(animationSpec = tween(200)) { it / 3 },
+                exit = fadeOut(animationSpec = tween(140)) +
+                    slideOutVertically(animationSpec = tween(160)) { it / 3 },
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .navigationBarsPadding()
+                    .padding(horizontal = 24.dp, vertical = 12.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().height(56.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    FilledTonalIconButton(
+                        onClick = { showCloseAllConfirmDialog = true },
+                        enabled = tabs.isNotEmpty(),
+                        modifier = Modifier.size(48.dp)
+                    ) {
+                        Icon(
+                            Icons.Rounded.DeleteOutline,
+                            contentDescription = stringResource(R.string.ui_close_all_tabs)
+                        )
+                    }
+                    FilledIconButton(
+                        onClick = { launchNewTab(selectedCategory == TabCategory.INCOGNITO) },
+                        modifier = Modifier.size(56.dp),
+                        colors = IconButtonDefaults.filledIconButtonColors(
+                            containerColor = MaterialTheme.colorScheme.onSurface,
+                            contentColor = MaterialTheme.colorScheme.surface
+                        )
+                    ) {
+                        Icon(Icons.Rounded.Add, contentDescription = stringResource(R.string.ui_new_tab))
+                    }
+                    TextButton(
+                        onClick = effectiveOnBack,
+                        modifier = Modifier.heightIn(min = 48.dp)
+                    ) {
+                        Text(stringResource(R.string.ui_done))
+                    }
+                }
+            }
+
             // Floating Material 3 Expressive Undo Banner with slide-to-hide gesture and LIFO undo stack
             val currentUndoEntry = undoStack.lastOrNull()
             ExpressiveTabUndoBanner(
@@ -1343,7 +1405,8 @@ fun PetalTabGridSwitcher(
                 },
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
-                    .padding(bottom = 16.dp)
+                    .navigationBarsPadding()
+                    .padding(bottom = 88.dp)
             )
 
             // ── Closed Tabs Vault: a real full page hosted in this screen (not a Dialog window) ──
@@ -1827,13 +1890,14 @@ private fun PetalTabCard(
     val headerBg = MaterialTheme.colorScheme.surfaceContainerHigh
     val textColor = MaterialTheme.colorScheme.onSurface
 
-    var isSelecting by remember { mutableStateOf(false) }
+    val cardPressSource = remember { MutableInteractionSource() }
+    val cardPressed by cardPressSource.collectIsPressedAsState()
     var isMuted by remember(tab.id) { mutableStateOf(tab.isMuted) }
     val scaleAnim by animateFloatAsState(
         targetValue = when {
             isDragging -> 1.08f
             isHoveredForMerge -> 1.05f
-            isSelecting -> 1.05f
+            cardPressed -> 0.97f
             else -> 1.0f
         },
         animationSpec = spring(
@@ -1842,11 +1906,6 @@ private fun PetalTabCard(
             dampingRatio = androidx.compose.animation.core.Spring.DampingRatioNoBouncy,
             stiffness = androidx.compose.animation.core.Spring.StiffnessMediumLow
         ),
-        finishedListener = {
-            if (isSelecting) {
-                onTabSelect()
-            }
-        },
         label = "tabZoomScale"
     )
 
@@ -1871,30 +1930,16 @@ private fun PetalTabCard(
                 translationY = dragOffset.y
                 scaleX = scaleAnim
                 scaleY = scaleAnim
-                alpha = if (isDragging) 0.85f else if (isSelecting) 0.95f else 1.0f
+                alpha = if (isDragging) 0.85f else 1.0f
                 shadowElevation = if (isDragging) 30f else 0f
             }
-            .bouncyClickable(onClick = {
-                if (!isDragging) {
-                    onTabSelect()
-                }
-            })
-            .pointerInput(tab.id) {
-                detectTapGestures(
-                    onTap = {
-                        if (!isDragging) {
-                            onTabSelect()
-                        }
-                    },
-                    onLongPress = {
-                        if (!isDragging) {
-                            onLongPress()
-                        }
-                    }
-                )
-            }
+            .combinedClickable(
+                interactionSource = cardPressSource,
+                indication = ripple(bounded = true),
+                onClick = { if (!isDragging) onTabSelect() },
+                onLongClick = { if (!isDragging) onLongPress() }
+            )
             .then(if (borderStroke != null) Modifier.border(borderStroke, PetalContainmentShapes.Hero) else Modifier)
-            .entrance()
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             Row(

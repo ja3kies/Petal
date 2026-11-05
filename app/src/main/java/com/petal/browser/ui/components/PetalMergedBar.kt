@@ -324,7 +324,7 @@ fun PetalMergedBar(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(if (addressBarHeight.equals("COMPACT", true)) 50.dp else 56.dp)
+                            .height(if (addressBarHeight.equals("COMPACT", true)) 56.dp else 60.dp)
                             .padding(horizontal = if (resolvedIsBottom) 4.dp else 2.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -485,7 +485,7 @@ private fun BarActionButton(
     }
 
     val icon = when (action) {
-        BarAction.BACK -> if (isLoading) Icons.Rounded.Close else action.icon
+        BarAction.BACK -> action.icon
         BarAction.RELOAD -> if (isLoading) Icons.Rounded.Close else action.icon
         else -> action.icon
     }
@@ -519,10 +519,10 @@ private fun BarActionButton(
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val pressScale by animateFloatAsState(
-        targetValue = if (isPressed) 0.88f else 1.0f,
+        targetValue = if (isPressed) 0.96f else 1.0f,
         animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessMedium
+            dampingRatio = Spring.DampingRatioNoBouncy,
+            stiffness = Spring.StiffnessMediumHigh
         ),
         label = "merge_btn_press_scale"
     )
@@ -531,7 +531,7 @@ private fun BarActionButton(
         shape = CircleShape,
         color = if (isLiquidGlass && isPressed) MaterialTheme.colorScheme.primary.copy(alpha = 0.16f) else Color.Transparent,
         modifier = Modifier
-            .size(44.dp)
+            .size(48.dp)
             .graphicsLayer {
                 scaleX = pressScale
                 scaleY = pressScale
