@@ -24,7 +24,7 @@ def verify_svg(path):
     root=ET.fromstring(raw)
     group=next((node for node in root if node.tag.endswith("}g")),None)
     assert group is not None and group.attrib["transform"]==TRANSFORM,path
-    petals=[e.attrib["d"] for e in group if e.tag.endswith("}path")]
+    petals=[e.attrib["d"] for e in group if e.tag.rsplit("}", 1)[-1] == "path"]
     assert len(petals)==4,path
     clear=re.sub(r'<rect width="108" height="108" fill="#1A0D1E"\s*/>','',raw,count=1)
     pix=648  # 6 px/dp at 108 dp
@@ -47,7 +47,7 @@ def verify_svg(path):
 
 def verify_vector(path,reference):
     root=ET.parse(path).getroot()
-    group=next((e for e in root if e.tag.endswith("}group")),None)
+    group=next((e for e in root if e.tag.rsplit("}", 1)[-1] == "group"),None)
     assert group is not None,path
     for field,value in EXPECTED.items():
         assert group.attrib.get(AND_NS+field)==value,(path,field)
