@@ -522,7 +522,7 @@ private fun BarActionButton(
         targetValue = if (isPressed) 0.96f else 1.0f,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioNoBouncy,
-            stiffness = Spring.StiffnessMediumHigh
+            stiffness = Spring.StiffnessMedium
         ),
         label = "merge_btn_press_scale"
     )
