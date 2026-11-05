@@ -1,0 +1,48 @@
+name: Extract Petal GitHub arm64 APK
+
+on:
+  push:
+    branches:
+      - ci/petal-arm64-apk-20261105
+    paths:
+      - .github/workflows/extract-petal-arm64.yml
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  extract:
+    if: github.repository == 'ja3kies/Petal'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download verified build artifact from PR CI
+        uses: actions/download-artifact@v4
+        with:
+          name: petal-browser-release
+          repository: ja3kies/Petal
+          run-id: 41983552041
+          github-token: ${{ github.token }}
+          path: extracted
+
+      - name: Select and inspect GitHub arm64 release APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          target="extracted/app-github-arm64-v8a-release.apk"
+          test -s "$target"
+          test "$(find extracted -type f -name 'app-github-arm64-v8a-release.apk' | wc -l)" -eq 1
+          unzip -tq "$target" >/dev/null
+          mkdir -p selected
+          cp "$target" selected/Petal-GitHub-arm64-v8a-32dd4f8.apk
+          sha256sum selected/*.apk
+          du -h selected/*.apk
+
+      - name: Upload Pixel 9 APK only
+        uses: actions/upload-artifact@v4
+        with:
+          name: Petal-GitHub-arm64-Pixel9-32dd4f8
+          path: selected/Petal-GitHub-arm64-v8a-32dd4f8.apk
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 2
