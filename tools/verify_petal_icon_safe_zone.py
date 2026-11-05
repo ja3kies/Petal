@@ -51,7 +51,7 @@ def verify_vector(path,reference):
     assert group is not None,path
     for field,value in EXPECTED.items():
         assert group.attrib.get(AND_NS+field)==value,(path,field)
-    petals=[e.attrib[AND_NS+"pathData"] for e in group if e.tag.endswith("}path")]
+    petals=[e.attrib[AND_NS+"pathData"] for e in group if e.tag.rsplit("}", 1)[-1] == "path"]
     assert petals==reference,(path,"petal geometry mismatch")
     print(f"PASS {path.name}: transform and original 4 outlines match")
 
