@@ -277,7 +277,7 @@ fun PetalBottomNavBar(
                         val sc = 1f + 0.22f * p
                         scaleX = sc
                         scaleY = sc
-                        alpha = 1f - 0.7f * p
+                        alpha = 1f - p
                     }
                 )
             }
@@ -404,11 +404,11 @@ fun PetalBottomNavBar(
                             index = 2,
                             isLiquidGlass = isLiquidGlass,
                             modifier = Modifier.weight(1f),
-                            icon = { _, _ ->
+                            icon = { _, tint ->
                                 Icon(
                                     painter = androidx.compose.ui.res.painterResource(com.petal.browser.R.drawable.ic_petal_search),
                                     contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary,
+                                    tint = tint,
                                     modifier = Modifier.size(24.dp)
                                 )
                             },
