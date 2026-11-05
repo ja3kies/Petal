@@ -50,9 +50,15 @@ android {
         abi {
             enable true
             reset()
-            include 'arm64-v8a', 'armeabi-v7a', 'x86', 'x86_64'
-            // Keep the universal APK so all supported ABIs are available in one package.
-            universalApk true
+            // Only opt-in, test APK builds restrict output to ARM64. Defaults stay unchanged.
+            if (project.hasProperty('PETAL_ONLY_ARM64') &&
+                project.property('PETAL_ONLY_ARM64').toString() == 'true') {
+                include 'arm64-v8a'
+                universalApk false
+            } else {
+                include 'arm64-v8a', 'armeabi-v7a', 'x86', 'x86_64'
+                universalApk true
+            }
         }
     }
 

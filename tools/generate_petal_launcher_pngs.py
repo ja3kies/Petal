@@ -25,7 +25,7 @@ BACKGROUND = '#1A0D1E'
 def parse_paths(data: str) -> list[str]:
     root = ET.fromstring(data)
     group = next((node for node in root if node.tag.endswith("}g")), None)
-    if group is None or group.attrib.get("transform") != "translate(18 18) scale(0.666667)":
+    if group is None or group.attrib.get("transform") != "translate(25.92 25.92) scale(0.52)":
         raise ValueError("Unexpected approved logo transform")
     paths = [node.attrib["d"] for node in group if node.tag.endswith("}path")]
     if len(paths) != 4:

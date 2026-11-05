@@ -1,0 +1,128 @@
+name: Build Petal safe-zone ARM64 APK
+
+on:
+  push:
+    branches: [fix/floating-navbar-ux-20261105]
+    paths:
+      - .github/workflows/build-petal-arm64-safe-icon.yml
+      - app/build.gradle
+      - app/src/main/res/drawable/ic_launcher_foreground.xml
+      - app/src/main/res/drawable/ic_launcher_monochrome.xml
+      - app/src/main/res/drawable/ic_launcher_foreground_dynamic.xml
+      - docs/branding/petal-logo.svg
+      - docs/branding/petal-monochrome.svg
+      - tools/generate_petal_launcher_pngs.py
+      - tools/verify_petal_icon_safe_zone.py
+
+permissions:
+  contents: write
+
+jobs:
+  build-arm64-only:
+    if: github.repository == 'ja3kies/Petal'
+    runs-on: ubuntu-latest
+    env:
+      GRADLE_OPTS: '-Dorg.gradle.jvmargs=-Xmx6144m -XX:MaxMetaspaceSize=1536m -Dorg.gradle.daemon=false -Dorg.gradle.workers.max=4'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install icon render tools
+        run: python -m pip install --disable-pip-version-check 'CairoSVG==2.8.2' 'Pillow==11.3.0'
+
+      - name: Verify Android adaptive icon safe zone
+        run: python tools/verify_petal_icon_safe_zone.py
+
+      - name: Regenerate launcher fallback PNGs
+        run: python tools/generate_petal_launcher_pngs.py
+
+      - name: Save generated PNG changes on isolated feature branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add app/src/main/res/mipmap-mdpi/ic_launcher*.png
+          git add app/src/main/res/mipmap-hdpi/ic_launcher*.png
+          git add app/src/main/res/mipmap-xhdpi/ic_launcher*.png
+          git add app/src/main/res/mipmap-xxhdpi/ic_launcher*.png
+          git add app/src/main/res/mipmap-xxxhdpi/ic_launcher*.png
+          git diff --cached --check
+          if git diff --cached --quiet; then
+            echo "PNG artwork already matches current SVG."
+          else
+            git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'fix(branding): regenerate safe-zone launcher PNGs'
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+          fi
+          echo "Source commit: $(git rev-parse HEAD)" >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Prepare signing key (temporary only if no configured key)
+        shell: bash
+        env:
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+          ALIAS: ${{ secrets.ALIAS }}
+          KEY_STORE_PASSWORD: ${{ secrets.KEY_STORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          if [[ -n "$SIGNING_KEY" && -n "$ALIAS" && -n "$KEY_STORE_PASSWORD" && -n "$KEY_PASSWORD" ]]; then
+            printf '%s' "$SIGNING_KEY" | base64 -d > /tmp/petal-release.keystore
+            storepass="$KEY_STORE_PASSWORD"
+            keypass="$KEY_PASSWORD"
+            alias="$ALIAS"
+            echo 'Signing: configured keystore' >> "$GITHUB_STEP_SUMMARY"
+          else
+            keytool -genkeypair -noprompt -keystore /tmp/petal-release.keystore -storepass android -alias petaltest -keypass android -keyalg RSA -keysize 3072 -validity 365 -dname 'CN=Petal Test Build, O=Development'
+            storepass=android
+            keypass=android
+            alias=petaltest
+            echo 'Signing: TEMPORARY TEST KEY. APK may not update an already installed Petal.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+          keytool -list -keystore /tmp/petal-release.keystore -storepass "$storepass" -alias "$alias" >/dev/null
+          echo 'RELEASE_STORE_FILE=/tmp/petal-release.keystore' >> "$GITHUB_ENV"
+          echo "RELEASE_STORE_PASSWORD=$storepass" >> "$GITHUB_ENV"
+          echo "RELEASE_KEY_ALIAS=$alias" >> "$GITHUB_ENV"
+          echo "RELEASE_KEY_PASSWORD=$keypass" >> "$GITHUB_ENV"
+
+      - name: Build GitHub release for ARM64-v8a only
+        shell: bash
+        run: |
+          set -euo pipefail
+          chmod +x gradlew
+          ./gradlew :app:assembleGithubRelease -PPETAL_ONLY_ARM64=true -PRELEASE_STORE_FILE="$RELEASE_STORE_FILE" -PRELEASE_STORE_PASSWORD="$RELEASE_STORE_PASSWORD" -PRELEASE_KEY_ALIAS="$RELEASE_KEY_ALIAS" -PRELEASE_KEY_PASSWORD="$RELEASE_KEY_PASSWORD" --build-cache --no-daemon --stacktrace
+
+      - name: Verify APK architecture, signature and integrity
+        shell: bash
+        run: |
+          set -euo pipefail
+          apk="app/build/outputs/apk/github/release/app-github-arm64-v8a-release.apk"
+          test -s "$apk"
+          test "$(find app/build/outputs/apk/github/release -name '*.apk' -type f | wc -l)" -eq 1
+          if [[ ! -s "$apk" ]]; then exit 1; fi
+          unzip -tq "$apk" >/dev/null
+          apksigner="$(find "$ANDROID_HOME/build-tools" -name apksigner -type f | sort -V | tail -n 1)"
+          test -x "$apksigner"
+          "$apksigner" verify --verbose "$apk" >/dev/null
+          mkdir -p deliver
+          cp "$apk" deliver/Petal-4.6.0-GitHub-arm64-v8a-safe-icon.apk
+          sha256sum deliver/*.apk | tee -a "$GITHUB_STEP_SUMMARY"
+          du -h deliver/*.apk
+
+      - name: Upload ONLY arm64-v8a APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Petal-4.6.0-ARM64-safe-icon
+          path: deliver/Petal-4.6.0-GitHub-arm64-v8a-safe-icon.apk
+          compression-level: 0
+          if-no-files-found: error
+          retention-days: 2
