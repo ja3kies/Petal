@@ -106,8 +106,8 @@ class BarPrefsTest {
     fun testBarPrefsDefaults() {
         val sp = createFakeSharedPreferences(emptyMap())
         val (leading, trailing) = BarPrefs.getSanitizedMergeActions(sp)
-        assertEquals(listOf(BarAction.TABS), leading)
-        assertEquals(listOf(BarAction.NEW_TAB, BarAction.MENU), trailing)
+        assertEquals(listOf(BarAction.BACK), leading)
+        assertEquals(listOf(BarAction.TABS, BarAction.MENU), trailing)
     }
 
     @Test

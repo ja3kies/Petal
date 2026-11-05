@@ -16,7 +16,7 @@ class AddressBarSettingsViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository
 ) : ViewModel() {
     val position: StateFlow<String> = settingsRepository.addressBarPosition
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "TOP")
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "BOTTOM")
     val height: StateFlow<String> = settingsRepository.addressBarHeight
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "COMPACT")
     val action: StateFlow<String> = settingsRepository.addressBarAction
@@ -27,7 +27,7 @@ class AddressBarSettingsViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
 
     val style: StateFlow<String> = settingsRepository.addressBarStyle
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), BarPrefs.STYLE_CLASSIC)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), BarPrefs.STYLE_MERGE)
     val mergeLeading: StateFlow<String> = settingsRepository.mergeLeading
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), BarPrefs.DEFAULT_MERGE_LEADING)
     val mergeTrailing: StateFlow<String> = settingsRepository.mergeTrailing
