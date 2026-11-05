@@ -151,7 +151,9 @@ fun AddressPill(
             withStyle(SpanStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.SemiBold)) {
                 append(domain)
             }
-            if (path.isNotEmpty()) {
+            // Compact merged toolbar displays the trusted host first.
+            // The full path remains available in the editable omnibox on tap.
+            if (!inMergedBar && path.isNotEmpty()) {
                 withStyle(SpanStyle(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f), fontWeight = FontWeight.Normal)) {
                     append(path)
                 }
@@ -165,7 +167,7 @@ fun AddressPill(
     val urlBoxBackground = when {
         inMergedBar -> {
             if (isLiquidGlass) MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.16f)
-            else MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.65f)
+            else MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.40f)
         }
         isBottom -> {
             if (isLiquidGlass) MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.16f)

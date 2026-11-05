@@ -182,4 +182,44 @@ class BarPrefsTest {
         assertEquals("TABS,MENU", state[BarPrefs.KEY_MERGE_TRAILING])
         assertEquals(BarPrefs.LAYOUT_STACKED, state[BarPrefs.KEY_MERGE_LAYOUT])
     }
+
+    @Test
+    fun floatingBottomToolbarReservesScrollViewportAndReleasesSpaceWhenMinimized() {
+        // A 92px floating toolbar at the bottom must never cover the last text line.
+        // The legacyUnderBottom escape hatch is intentionally not used for floating.
+        val result = BarInsets.compute(
+            isBottom = true,
+            reserveBarSpace = true,
+            addressHeight = 92,
+            bottomNavHeight = 0,
+            gap = 2,
+            statusBarGap = 28,
+            legacyUnderTop = false,
+            legacyUnderBottom = false,
+            pillCollapse = true,
+            pillHeight = 40,
+            navBarBottomInset = 24
+        )
+        assertEquals(28, result.top)
+        assertEquals(92, result.bottom)
+        assertEquals(0, result.hiddenBottom)
+    }
+
+    @Test
+    fun dockedAndFloatingMergedToolbarShareTheSameSafeInsetContract() {
+        val styles = listOf(50, 72, 112)
+        styles.forEach { measuredHeight ->
+            val result = BarInsets.compute(
+                isBottom = true,
+                reserveBarSpace = true,
+                addressHeight = measuredHeight,
+                bottomNavHeight = 0,
+                gap = 2,
+                statusBarGap = 28,
+                legacyUnderTop = false,
+                legacyUnderBottom = false
+            )
+            assertEquals(measuredHeight, result.bottom)
+        }
+    }
 }

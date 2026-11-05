@@ -2,7 +2,7 @@ name: Build Petal safe-zone ARM64 APK
 
 on:
   push:
-    branches: [fix/floating-navbar-ux-20261105]
+    branches: [fix/floating-navbar-ux-20261105, fix/petal-toolbar-reading-insets-20261105]
     paths:
       - .github/workflows/build-petal-arm64-safe-icon.yml
       - app/build.gradle
@@ -10,6 +10,8 @@ on:
       - app/src/main/java/com/petal/browser/compose/tabs/PetalTabGridSwitcher.kt
       - app/src/main/java/com/petal/browser/ui/components/PetalOmniboxPage.kt
       - app/src/main/java/com/petal/browser/ui/components/BarPrefs.kt
+      - app/src/main/java/com/petal/browser/ui/components/AddressPill.kt
+      - app/src/main/java/com/petal/browser/activity/BrowserActivity.java
       - app/src/main/res/drawable/ic_launcher_foreground.xml
       - app/src/main/res/drawable/ic_launcher_monochrome.xml
       - app/src/main/res/drawable/ic_launcher_foreground_dynamic.xml

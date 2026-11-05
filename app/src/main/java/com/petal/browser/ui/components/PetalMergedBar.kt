@@ -142,7 +142,7 @@ fun PetalMergedBar(
     val containerColor = when {
         isIncognito -> com.petal.browser.ui.theme.IncognitoSurfaceContainer
         isLiquidGlass -> Color.Transparent
-        else -> MaterialTheme.colorScheme.surfaceContainerHigh
+        else -> MaterialTheme.colorScheme.surfaceContainer
     }
 
     val rawStatusTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
@@ -169,7 +169,7 @@ fun PetalMergedBar(
     val outerBgAlpha = if (isPillCollapse) (1f - collapseProgress * 1.5f).coerceIn(0f, 1f) else 1f
 
     val animatedContainerColor = if (isLiquidGlass) Color.Transparent else containerColor.copy(alpha = containerColor.alpha * outerBgAlpha)
-    val animatedElevation = (if (isLiquidGlass) 0.dp else if (resolvedIsBottom) 2.dp else 4.dp) * outerBgAlpha
+    val animatedElevation = (if (isLiquidGlass || isFloatingBar) 0.dp else if (resolvedIsBottom) 2.dp else 4.dp) * outerBgAlpha
 
     Box(
         modifier = modifier.fillMaxWidth(),
